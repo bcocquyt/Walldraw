@@ -1,10 +1,46 @@
 #include "QHStepper.h"
 #include <TinyStepper_28BYJ_48.h>		//步进电机的库 如果没有该lib请按Ctrl+Shift+I 从 库管理器中搜索 Stepper_28BYJ_48，并安装
+#include <Servo.h>
 
 TinyStepper_28BYJ_48 m1; //(7,8,9,10);  //M1 L步进电机   in1~4端口对应UNO  7 8 9 10
 TinyStepper_28BYJ_48 m2; //(2,3,5,6);  //M2 R步进电机   in1~4端口对应UNO 2 3 5 6
 
+// pen state 笔状态（抬笔，落笔）.
+static int ps;
+Servo pen;
 
+void pen_down()
+{
+  if (ps==PEN_UP_ANGLE)
+  {
+    ps=PEN_DOWN_ANGLE;
+    pen.write(ps);
+    delay(TPD);
+  }
+}
+
+void print_position()
+{
+  //	Serial.print("G01 X"); Serial.print(destination[X_AXIS]);
+//	Serial.print("Y"); Serial.print(destination[Y_AXIS]);
+//	Serial.print("Z"); Serial.println(destination[Z_AXIS]);
+  Serial.print("<Idle|MPos:");
+	Serial.print(current_position[X_AXIS]);
+	Serial.print(",");
+	Serial.print(current_position[Y_AXIS]);
+	Serial.print(",");
+	Serial.print(current_position[Z_AXIS]);
+	Serial.println("|FS:0,0|Ov:100,100,100>");
+}
+
+void pen_up()
+{
+  if (ps==PEN_DOWN_ANGLE)
+  {
+    ps=PEN_UP_ANGLE;
+    pen.write(ps);
+  }
+}
 
 void IK(float x,float y,long &target_steps_m1, long &target_steps_m2) {
   float dy = y - Y_MIN_POS;
@@ -20,13 +56,25 @@ void stepper_init(){
   current_steps_M1 = target_steps_m1;
   current_steps_M2 = target_steps_m2;
 
-  m1.connectToPins(11,10,9,8); //M1 L步进电机   in1~4端口对应UNO  7 8 9 10
-  m2.connectToPins(7,6,5,4);  //M2 R步进电机   in1~4端口对应UNO 2 3 5 6
+  m1.connectToPins(10,9,8,7); //M1 L步进电机   in1~4端口对应UNO  7 8 9 10
+  m2.connectToPins(6,5,3,2);  //M2 R步进电机   in1~4端口对应UNO 2 3 5 6
   m1.setSpeedInStepsPerSecond(10000);
   m1.setAccelerationInStepsPerSecondPerSecond(100000);
   m2.setSpeedInStepsPerSecond(10000);
   m2.setAccelerationInStepsPerSecondPerSecond(100000);
   //舵机初始化
+  pen.attach(A0);
+
+  current_position[Z_AXIS] = 0;
+  current_position[X_AXIS] = 0;
+  current_position[Y_AXIS] = 0;
+
+  destination[Z_AXIS] = 1;
+  destination[X_AXIS] = 0;
+  destination[Y_AXIS] = 0;
+  buffer_line_to_destination();
+  ps=PEN_UP_ANGLE;
+  pen.write(ps);
 }
 
 //直接由当前位置移动到目标位置
@@ -71,7 +119,19 @@ void moveto(float target_X,float target_Y) {
 void buffer_line_to_destination(){
   float cartesian_mm=sqrt( (current_position[X_AXIS] - destination[X_AXIS])* (current_position[X_AXIS] - destination[X_AXIS]) \
 	          + (current_position[Y_AXIS] - destination[Y_AXIS])* (current_position[Y_AXIS] - destination[Y_AXIS]));
-	
+
+  if (destination[Z_AXIS] > 0) {
+    if (current_position[Z_AXIS] <= 0) {
+      current_position[Z_AXIS] = destination[Z_AXIS];
+      pen_up(); 
+    }
+  } else {
+    if (current_position[Z_AXIS] > 0) {
+      current_position[Z_AXIS] = destination[Z_AXIS];
+      pen_down(); 
+    }
+  }
+
   if(cartesian_mm<=DEFAULT_XY_MM_PER_STEP) { moveto(destination[X_AXIS],destination[Y_AXIS]); return; }
 	
   long  steps=floor(cartesian_mm/DEFAULT_XY_MM_PER_STEP);
@@ -134,7 +194,7 @@ void buffer_arc_to_destination( float (&offset)[2], bool clockwise ){
 	  raw[p_axis] = center_P + r_P;
       raw[q_axis] = center_Q + r_Q;
 	  
-	 // moveto(raw[p_axis], raw[q_axis]); //逆解执行函数
+	  moveto(raw[p_axis], raw[q_axis]); //逆解执行函数
 	  
 	  #if 1
 		  Serial.print("G0 X");
@@ -142,9 +202,5 @@ void buffer_arc_to_destination( float (&offset)[2], bool clockwise ){
 		  Serial.print("Y");
 		  Serial.println(raw[q_axis]);
       #endif
-	  
-	  
-	  
-	}
-	
+	}	
 }

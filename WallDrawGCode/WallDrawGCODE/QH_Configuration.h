@@ -19,14 +19,13 @@
 #define MM_PER_ARC_SEGMENT  1  //圆弧分割最小每步距离 
 #define N_ARC_CORRECTION   25  //修正之间的极化段数
 
-
-#define X_SEPARATION  505           //两绳上方的水平距离mm 
+#define X_SEPARATION  346           //两绳上方的水平距离mm 
 #define X_MAX_POS       ( X_SEPARATION*0.5)   //x轴最大值  0位在画板中心
 #define X_MIN_POS       (-X_SEPARATION*0.5)   //x轴最小值
 
 /* 垂直距离的参数： 正值在画板下放，理论上只要画板够大可以无限大，负值区域在笔（开机前）的上方*/
-#define Y_MAX_POS         (-300)   //y轴最大值 画板最下方
-#define Y_MIN_POS         (300)    //y轴最小值 画板最上方  左右两线的固定点到笔的垂直距离，尽量测量摆放准确，误差过大会有畸变
+#define Y_MAX_POS         (-285)   //y轴最大值 画板最下方
+#define Y_MIN_POS         (285)    //y轴最小值 画板最上方  左右两线的固定点到笔的垂直距离，尽量测量摆放准确，误差过大会有畸变
 
 #define LINE_DELAY      1   //步进电机每步的等候时间 （微妙）
 
@@ -46,5 +45,14 @@ extern String gcode_command;
 extern float destination[XYZ];
 extern float current_position[XYZ];
 extern long current_steps_M1, current_steps_M2; //当前步进电机相对于0点位置总步数
+
+//抬笔舵机的角度参数  具体数值要看摆臂的安放位置，需要调节
+#define TPD             300   //Turning waiting time (ms), because the inertia pen will continue to move, tentatively wait for the pen to stop before moving.
+#define PEN_UP_ANGLE    5  //抬笔
+#define PEN_DOWN_ANGLE  30  //落笔
+//上面是需要调节的参数 =============================================
+
+#define PEN_DOWN 1  //笔状态  下笔
+#define PEN_UP 0    //笔状态  抬笔
 
 #endif

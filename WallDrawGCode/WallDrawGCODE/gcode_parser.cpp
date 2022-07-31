@@ -18,7 +18,6 @@ void process_parsed_command() {
    }
 }
 
-
 void gcode_G0_G1(){
 	if( gcode_command.indexOf('X') > -1){
 		if( gcode_command.indexOf('Y') > -1 ) destination[X_AXIS] = gcode_command.substring(gcode_command.indexOf('X')+1,gcode_command.indexOf('Y')).toFloat();
@@ -36,12 +35,9 @@ void gcode_G0_G1(){
 		if( gcode_command.indexOf('S') > -1 ) destination[Z_AXIS] = gcode_command.substring(gcode_command.indexOf('Z')+1,gcode_command.indexOf('S')).toFloat(); 
 		else destination[Z_AXIS] = gcode_command.substring(gcode_command.indexOf('Z')+1,gcode_command.length()).toFloat();
 	}
-//	Serial.print("G01 X"); Serial.print(destination[X_AXIS]);
-//	Serial.print("Y"); Serial.print(destination[Y_AXIS]);
-//	Serial.print("Z"); Serial.println(destination[Z_AXIS]);
-//	
-	buffer_line_to_destination();
 	
+	buffer_line_to_destination();
+	print_position();	
 }
 
 void gcode_G2_G3( bool clockwise ){

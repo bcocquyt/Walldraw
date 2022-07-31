@@ -7,5 +7,6 @@
 void stepper_init();
 void buffer_line_to_destination();
 void buffer_arc_to_destination( float (&offset)[2], bool clockwise );
+void print_position();
 
 #endif

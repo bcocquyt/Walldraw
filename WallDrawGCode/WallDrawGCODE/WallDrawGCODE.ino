@@ -15,7 +15,7 @@ void setup() {
   delay(1200);
   Serial.println("Grbl 1.1h ['$' for help]");
   delay(1200);
-  Serial.println("<Idle|MPos:0.000,0.000,0.000|FS:0,0|Ov:100,100,100>");
+  print_position();
 }
 
 void loop() {
