@@ -146,6 +146,8 @@ void buffer_line_to_destination(){
   moveto(destination[X_AXIS],destination[Y_AXIS]);
 }
 
+/* clockwise => x gets set to 0 between instructions 
+   counterclockwise => y gets set to 0 between instructions */
 void buffer_arc_to_destination( float (&offset)[2], bool clockwise ){
 	float r_P = -offset[0], r_Q = -offset[1];
 	byte p_axis = X_AXIS, q_axis = Y_AXIS, l_axis = Z_AXIS;
@@ -179,7 +181,7 @@ void buffer_arc_to_destination( float (&offset)[2], bool clockwise ){
 				
 	int8_t arc_recalc_count = N_ARC_CORRECTION;
 	
-	for (uint16_t i = 1; i < segments; i++) {
+	for (uint16_t i = 0; i < segments; i++) {
 		if (--arc_recalc_count) {
           const float r_new_Y = r_P * sin_T + r_Q * cos_T;
           r_P = r_P * cos_T - r_Q * sin_T;
